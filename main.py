@@ -2,6 +2,8 @@ import requests
 from bs4 import BeautifulSoup
 import spotipy
 import spotipy.util as util
+from nltk.tokenize import sent_tokenize, word_tokenize
+from nltk.corpus import stopwords
 
 def grab_nts_html(url):
     session = requests.Session()
@@ -56,28 +58,44 @@ def search_spotify(sp, query):
     results = sp.search(q=query, limit=50)
     return results
 
-def add_tracks(sp, tracks_dict):
+def add_tracks_1(sp, tracks_dict):
     found_count = 0
     for track in tracks_dict:
         track_title = track['title']
         track_artists = track['artist']
-        results = sp.search(q=track_title, limit=50)
+        results = sp.search(q=track_title, limit=10)
         track_id = get_track_id_from_search_results(results, track_title, track_artists)     
         if track_id:
             found_count += 1
-            sp.user_playlist_add_tracks(user=username, playlist_id=playlist_id, tracks=track_id)
+#            sp.user_playlist_add_tracks(user=username, playlist_id=playlist_id, tracks=track_id)
     percent_found = round((found_count/len(tracks_dict))*100,2)
-    print('Found ' + str(found_count) + ' tracks out of a possible ' + str(len(tracks_dict)) + ' (' + str(percent_found) + '% success rate)')
+    print('Method #1 - Found ' + str(found_count) + ' tracks out of a possible ' + str(len(tracks_dict)) + ' (' + str(percent_found) + '% success rate)')
      
 def get_track_id_from_search_results(results, track_title, track_artists):
     for result in results['tracks']['items']:
             if result['name'] in track_title and track_artists[0] in result['artists'][0]['name']:
                 track_id = [result['id']]
                 return track_id
-                break
     return False
 
-url = 'https://www.nts.live/shows/creepzone/episodes/creepzone-10th-september-2018'
+
+def add_tracks_2(sp, tracks_dict):
+    found_count = 0
+    for track in tracks_dict:
+        track_title = track['title']
+        track_artists = track['artist']
+        search_query = track_artists[0] + ' ' + track_title
+        results = sp.search(q=search_query, limit=10)
+        track_id = get_track_id_from_search_results(results, track_title, track_artists)     
+        if track_id:
+            found_count += 1
+#            sp.user_playlist_add_tracks(user=username, playlist_id=playlist_id, tracks=track_id)
+    percent_found = round((found_count/len(tracks_dict))*100,2)
+    print('Method #2 - Found ' + str(found_count) + ' tracks out of a possible ' + str(len(tracks_dict)) + ' (' + str(percent_found) + '% success rate)')
+         
+
+
+url = 'https://www.nts.live/shows/the-do-you-breakfast-show/episodes/the-do-you-breakfast-show-w-charlie-bones-13th-august-2018'
 username = '' # your username
 
 print('Getting show HTML')
@@ -93,9 +111,5 @@ if token:
     playlist_name = 'Python/Spotify API Test'
     playlist_id = create_playlist(sp=sp, username = username, playlist_name = playlist_name)   
     print('Searching for tracks and adding to Spotify')
-    add_tracks(sp, tracks_dict)
-
-            
-
-
-        
+    add_tracks_1(sp, tracks_dict)
+    add_tracks_2(sp, tracks_dict)
