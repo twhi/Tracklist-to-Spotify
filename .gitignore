@@ -1,6 +1,4 @@
-spotify.py
-testing new dict.py
 .cache-tom1
 .cache-whitehet
 .env
-*.csv
+./data/*.csv
