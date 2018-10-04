@@ -35,7 +35,8 @@ class ToSpotify:
             
         return playlist_id
     
-    def create_playlist(self, track_dict, playlist_name, search_method):
+    def create_playlist(self, track_dict, playlist_name, search_method, add_tracks=False):
+        self.add_tracks = add_tracks
         self.search_method = search_method
         self.playlist_name = playlist_name
         self.track_dict = track_dict
@@ -48,6 +49,8 @@ class ToSpotify:
             self._add_to_playlist(track_id)
         
         self._calculate_success()
+        self.found_count = 0
+        return self.track_id_list
     
     def _calculate_success(self):
         percent_found = round((self.found_count/len(self.track_dict))*100,2)
@@ -57,7 +60,8 @@ class ToSpotify:
         if track_id:
             self.track_id_list.append(track_id)
             self.found_count += 1
-            self.sp.user_playlist_add_tracks(user=self.username, playlist_id=self.playlist_id, tracks=track_id)
+            if self.add_tracks:
+                self.sp.user_playlist_add_tracks(user=self.username, playlist_id=self.playlist_id, tracks=track_id)
             return True
         else:
             self.track_id_list.append('')
@@ -67,13 +71,36 @@ class ToSpotify:
         if self.search_method == 1:
             track_title = track['title']
             search_string = track_title
+        elif self.search_method == 2:
+            track_title = track['title']
+            track_artists = track['artist']
+            search_string = track_artists[0] + ' ' + track_title
         return search_string
     
     def _get_track_id_from_search_results(self, results, track):
         track_title = track['title']
         track_artists = track['artist']
         for result in results['tracks']['items']:
-                if result['name'] in track_title and track_artists[0] in result['artists'][0]['name']:
+                result_title = result['name'] 
+                result_artists = result['artists']
+                result_artists_combined = [''.join(x['name'].lower()) for x in result_artists]
+                
+#                print('searching for \'' + str(track_artists[0].lower().strip()) + '\' within the following list ' + str(result_artists_combined))
+                if track_artists[0].lower().strip() in result_artists_combined:
+#                    print(' SUCCESS')
                     track_id = [result['id']]
                     return track_id
         return False
+    
+#    def _get_track_id_from_search_results(self, results, track):
+#        track_title = track['title']
+#        track_artists = track['artist']
+#        for result in results['tracks']['items']:
+#                result_title = result['name'] 
+#                result_artists = result['artists']
+#                result_artists_combined = [''.join(x['name'].lower()) for x in result_artists]
+#                print(result_artists_combined)           
+#                if result_title in track_title and track_artists[0] in result_artists[0]['name']:
+#                    track_id = [result['id']]
+#                    return track_id
+#        return False
