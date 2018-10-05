@@ -1,14 +1,13 @@
 import os
 import spotipy
 import spotipy.util as util
+import re 
+from fuzzywuzzy import fuzz
+from fuzzywuzzy import process
 
 class ToSpotify:
     
-    def __init__(self):        
-        # INITIALISE VARIABLES
-        self.found_count = 0
-        self.track_id_list = []
-        
+    def __init__(self):            
         # INITIALISE SPOTIFY API VARIABLES
         self.client_id = os.environ.get('CLIENT_ID')
         self.client_secret = os.environ.get('CLIENT_SECRET')
@@ -36,6 +35,8 @@ class ToSpotify:
         return playlist_id
     
     def create_playlist(self, track_dict, playlist_name, search_method, add_tracks=False):
+        self.found_count = 0
+        self.track_id_list = []
         self.add_tracks = add_tracks
         self.search_method = search_method
         self.playlist_name = playlist_name
@@ -54,7 +55,7 @@ class ToSpotify:
     
     def _calculate_success(self):
         percent_found = round((self.found_count/len(self.track_dict))*100,2)
-        print('Method #1 - Found ' + str(self.found_count) + ' tracks out of a possible ' + str(len(self.track_dict)) + ' (' + str(percent_found) + '% success rate)')
+        print('Method #' + str(self.search_method) + ' - Found ' + str(self.found_count) + ' tracks out of a possible ' + str(len(self.track_dict)) + ' (' + str(percent_found) + '% success rate)')
     
     def _add_to_playlist(self, track_id):
         if track_id:
@@ -69,37 +70,60 @@ class ToSpotify:
     
     def _construct_search_string(self, track):
         if self.search_method == 1:
+            # SEARCHES BY TRACK TITLE
             track_title = track['title']
             search_string = track_title
         elif self.search_method == 2:
+            # SEARCHES BY A COMBINATION OF TRACK TITLE AND ARTIST
             track_title = track['title']
             track_artists = track['artist']
             search_string = track_artists[0] + ' ' + track_title
+        elif self.search_method == 3:
+            # SEARCHES BY A COMBINATION OF TRACK TITLE AND ARTIST BUT REMOVES ALL TEXT WITHIN BRACKETS
+            track_title = re.sub("[\(\[].*?[\)\]]", "", track['title']).strip()
+            track_artists = track['artist']
+            search_string = track_artists[0] + ' ' + track_title
+        elif self.search_method == 4:
+            # SEARCHES BY A COMBINATION OF TRACK TITLE AND ARTIST BUT REMOVES ALL TEXT WITHIN BRACKETS, ALSO REMOVES APOSTROPHES 
+            track_title = re.sub("[\(\[].*?[\)\]]", "", track['title']) # REMOVE BRACKETS
+            track_title = re.sub(r'([^\s\w]|_)+', '', track_title) # REMOVE PUNCTUATION
+            track_title.strip() # REMOVE LEADING AND TRAILING WHITESPACE
+            track_artists = track['artist']
+            search_string = track_artists[0] + ' ' + track_title
         return search_string
-    
+  
+#    3RD GENERATION MATCHING FUNCTION - USES FUZZY STRING MATCHING, MORE ACCURATE THAN GEN 2 BUT NEEDS REFINING  
     def _get_track_id_from_search_results(self, results, track):
-        track_title = track['title']
         track_artists = track['artist']
         for result in results['tracks']['items']:
-                result_title = result['name'] 
                 result_artists = result['artists']
                 result_artists_combined = [''.join(x['name'].lower()) for x in result_artists]
-                
-#                print('searching for \'' + str(track_artists[0].lower().strip()) + '\' within the following list ' + str(result_artists_combined))
-                if track_artists[0].lower().strip() in result_artists_combined:
-#                    print(' SUCCESS')
+                best_result = process.extractOne(track_artists[0].lower().strip(), result_artists_combined, scorer=fuzz.ratio)
+                score = best_result[1]
+                if score > 90:
                     track_id = [result['id']]
                     return track_id
         return False
+   
+##    2ND GENERATION RESULT MATCHING FUNCTION
+#    def _get_track_id_from_search_results(self, results, track):
+#        track_artists = track['artist']
+#        for result in results['tracks']['items']:
+#                result_artists = result['artists']
+#                result_artists_combined = [''.join(x['name'].lower()) for x in result_artists]
+#                if track_artists[0].lower().strip() in result_artists_combined:
+#                    track_id = [result['id']]
+#                    return track_id
+#        return False
     
+    
+##    ORIGINAL RESULT MATCHING FUNCTION
 #    def _get_track_id_from_search_results(self, results, track):
 #        track_title = track['title']
 #        track_artists = track['artist']
 #        for result in results['tracks']['items']:
 #                result_title = result['name'] 
-#                result_artists = result['artists']
-#                result_artists_combined = [''.join(x['name'].lower()) for x in result_artists]
-#                print(result_artists_combined)           
+#                result_artists = result['artists']         
 #                if result_title in track_title and track_artists[0] in result_artists[0]['name']:
 #                    track_id = [result['id']]
 #                    return track_id
