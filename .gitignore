@@ -2,3 +2,5 @@
 .cache-whitehet
 .env
 ./data/*.csv
+./__pycache__/
+./data/

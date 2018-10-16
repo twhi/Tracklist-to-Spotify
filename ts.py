@@ -35,6 +35,21 @@ class ToSpotify:
         return playlist_id
     
     def create_playlist(self, track_dict, playlist_name, search_method, add_tracks=False):
+        '''
+        Will create a spotify playlist named playlist_name. 
+        Track dict must be in the following format:
+        track_dict = [
+                        {
+                        'artist':[artist1, artist2, ...],
+                        'track':'trackname'
+                        },
+                        {
+                        'artist':[artist1, artist2, ...],
+                        'track':'trackname'
+                        }, 
+                        ...
+                    ]
+        '''
         self.found_count = 0
         self.track_id_list = []
         self.add_tracks = add_tracks
@@ -44,7 +59,9 @@ class ToSpotify:
         self.playlist_id = self._make_playlist(self.sp, self.username, self.playlist_name)
         
         for track in self.track_dict:
+#            print('--')
             search_string = self._construct_search_string(track)
+#            print('Searching for - ' + search_string)
             results = self.sp.search(q=search_string, limit=10)
             track_id = self._get_track_id_from_search_results(results, track)     
             self._add_to_playlist(track_id)
@@ -100,9 +117,13 @@ class ToSpotify:
                 result_artists_combined = [''.join(x['name'].lower()) for x in result_artists]
                 best_result = process.extractOne(track_artists[0].lower().strip(), result_artists_combined, scorer=fuzz.ratio)
                 score = best_result[1]
+#                print(' ...Best result is - ' + best_result[0] + ' at ' + str(score) + '% accuracy', end='')
                 if score > 90:
                     track_id = [result['id']]
+#                    print(' SUCCESSFUL')
                     return track_id
+#                else:
+#                    print(' FAILURE')
         return False
    
 ##    2ND GENERATION RESULT MATCHING FUNCTION
