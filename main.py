@@ -3,7 +3,7 @@
 from tracklists import Nts
 from ts import ToSpotify
 
-shows = ['https://www.nts.live/shows/the-do-you-breakfast-show/episodes/the-do-you-breakfast-show-11th-october-2018']
+shows = ['https://www.nts.live/shows/moxie/episodes/moxie-danny-daze-23rd-november-2016']
 
 for idx, url in enumerate(shows):
     nts = Nts()
@@ -12,7 +12,4 @@ for idx, url in enumerate(shows):
     print('#######################################')
     print('Show #' + str(idx+1))
     print('#######################################')      
-#    returned1 = spotify.create_playlist(track_dict=tracklist,playlist_name='newwuns',search_method=1,add_tracks=False)
-#    returned2 = spotify.create_playlist(track_dict=tracklist,playlist_name='newwuns',search_method=2,add_tracks=False)
-#    returned3 = spotify.create_playlist(track_dict=tracklist,playlist_name='newwuns',search_method=3,add_tracks=False)
-    returned4 = spotify.create_playlist(track_dict=tracklist,playlist_name='newwuns',search_method=4,add_tracks=True)
+    returned4 = spotify.create_playlist(track_dict=tracklist,playlist_name='house',search_method=4,add_tracks=True)
