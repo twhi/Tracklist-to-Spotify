@@ -7,11 +7,20 @@ chrome_options.add_argument('--headless')
 driver = webdriver.Chrome(chrome_options=chrome_options)
 driver.get('https://www.bbc.co.uk/programmes/m0000pc1') #Browser goes to google.com
 artists = driver.find_elements_by_class_name('artist')
-tracks = driver.find_elements_by_class_name('segment__track')
+tracks = driver.find_elements_by_xpath('//div[@class="segment__track"]//p')
 
-for artist in artists:
-    print(artist.text)
+print(len(tracks))
+
+'''
+Last few tracks on tracklist should be:
     
-for track in tracks:
-    print(track.text)
+    Secret Agent Man (Female Version)
+    Station to Station
+    Friday's Child
+    Heat (feat. Joanne Roberston) 
+    Streetwise
+    Don't Get Me Started
+'''
+
+    
 
