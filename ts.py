@@ -59,13 +59,11 @@ class ToSpotify:
         self.playlist_id = self._make_playlist(self.sp, self.username, self.playlist_name)
         
         for track in self.track_dict:
-#            print('--')
             search_string = self._construct_search_string(track)
-#            print('Searching for - ' + search_string)
             results = self.sp.search(q=search_string, limit=10)
             track_id = self._get_track_id_from_search_results(results, track)     
             self._add_to_playlist(track_id)
-        
+            
         self._calculate_success()
         self.found_count = 0
         return self.track_id_list
