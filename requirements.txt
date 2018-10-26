@@ -66,8 +66,6 @@ Pygments==2.2.0
 pylint==1.9.1
 pyOpenSSL==17.5.0
 pyparsing==2.2.0
-PyQt5==5.9.2
-pyqt5-tools==5.9.0.1.2
 python-dateutil==2.7.3
 pytz==2018.4
 pywinpty==0.5.1
