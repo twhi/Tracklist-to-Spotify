@@ -1,9 +1,15 @@
+altgraph==0.16.1
 beautifulsoup4==4.6.3
 bs4==0.0.1
 certifi==2018.10.15
 chardet==3.0.4
+future==0.17.1
 fuzzywuzzy==0.17.0
 idna==2.7
+macholib==1.11
+pefile==2018.8.8
+PyInstaller==3.4
+pywin32-ctypes==0.2.0
 requests==2.20.1
 selenium==3.141.0
 spotipy==2.4.4
